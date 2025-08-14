@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using ReverseMarket.Data;
 using ReverseMarket.Models;
+using ReverseMarket.Areas.Admin.Models; // Add this line
+using Microsoft.AspNetCore.Hosting;
+
 using System.ComponentModel.DataAnnotations;
 
 namespace ReverseMarket.Areas.Admin.Controllers
@@ -86,28 +89,28 @@ namespace ReverseMarket.Areas.Admin.Controllers
         }
     }
 
-    public class CreateAdvertisementViewModel
-    {
-        [Required]
-        public string Title { get; set; }
+    //public class CreateAdvertisementViewModel
+    //{
+    //    [Required]
+    //    public string Title { get; set; }
 
-        public string? Description { get; set; }
+    //    public string? Description { get; set; }
 
-        [Required]
-        public IFormFile Image { get; set; }
+    //    [Required]
+    //    public IFormFile Image { get; set; }
 
-        public string? LinkUrl { get; set; }
+    //    public string? LinkUrl { get; set; }
 
-        [Required]
-        public AdvertisementType Type { get; set; }
+    //    [Required]
+    //    public AdvertisementType Type { get; set; }
 
-        public int DisplayOrder { get; set; }
+    //    public int DisplayOrder { get; set; }
 
-        public bool IsActive { get; set; } = true;
+    //    public bool IsActive { get; set; } = true;
 
-        [Required]
-        public DateTime StartDate { get; set; }
+    //    [Required]
+    //    public DateTime StartDate { get; set; }
 
-        public DateTime? EndDate { get; set; }
-    }
+    //    public DateTime? EndDate { get; set; }
+    //}
 }

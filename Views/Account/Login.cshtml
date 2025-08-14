@@ -1,0 +1,54 @@
+﻿@model LoginViewModel
+@{
+    ViewData["Title"] = "تسجيل الدخول";
+}
+
+<div class="container-custom">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card-custom">
+                <div class="text-center mb-4">
+                    <i class="fas fa-sign-in-alt fa-3x text-primary mb-3"></i>
+                    <h1 class="h3 text-primary">تسجيل الدخول</h1>
+                    <p class="text-muted">أدخل رقم هاتفك للدخول أو إنشاء حساب جديد</p>
+                </div>
+
+                <form asp-action="Login" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="PhoneNumber" class="form-label">رقم الهاتف *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">@Model.CountryCode</span>
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="7xxxxxxxxx" required>
+                        </div>
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input asp-for="AcceptTerms" class="form-check-input" type="checkbox" required>
+                            <label class="form-check-label" asp-for="AcceptTerms">
+                                أوافق على <a href="/Home/Terms" target="_blank">شروط الاستخدام</a> و
+                                <a href="/Home/Privacy" target="_blank">سياسة الخصوصية</a>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-custom w-100">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        إرسال رمز التحقق
+                    </button>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="text-muted small">
+                        سيتم إرسال رمز التحقق عبر واتساب إلى رقم هاتفك
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

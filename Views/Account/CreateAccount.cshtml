@@ -1,0 +1,247 @@
+﻿@model CreateAccountViewModel
+@{
+    ViewData["Title"] = "إنشاء حساب جديد";
+}
+
+<div class="container-custom">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card-custom">
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                    <h1 class="h3 text-primary">إنشاء حساب جديد</h1>
+                    <p class="text-muted">أكمل بياناتك لإنشاء حسابك في السوق العكسي</p>
+                </div>
+
+                <form asp-action="CreateAccount" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <!-- Personal Information -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <h5 class="text-primary">
+                                <i class="fas fa-user me-2"></i>
+                                المعلومات الشخصية
+                            </h5>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="FirstName" class="form-label">الاسم الأول *</label>
+                            <input asp-for="FirstName" class="form-control" required>
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="LastName" class="form-label">اسم العائلة *</label>
+                            <input asp-for="LastName" class="form-control" required>
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="DateOfBirth" class="form-label">تاريخ الميلاد *</label>
+                            <input asp-for="DateOfBirth" type="date" class="form-control" required>
+                            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Gender" class="form-label">الجنس *</label>
+                            <select asp-for="Gender" class="form-control" required>
+                                <option value="">اختر الجنس</option>
+                                <option value="ذكر">ذكر</option>
+                                <option value="أنثى">أنثى</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Email" class="form-label">البريد الإلكتروني</label>
+                            <input asp-for="Email" type="email" class="form-control">
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Location Information -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <h5 class="text-primary">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                معلومات الموقع
+                            </h5>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="City" class="form-label">المحافظة *</label>
+                            <select asp-for="City" class="form-control" required>
+                                <option value="">اختر المحافظة</option>
+                                <option value="بغداد">بغداد</option>
+                                <option value="البصرة">البصرة</option>
+                                <option value="أربيل">أربيل</option>
+                                <option value="النجف">النجف</option>
+                                <option value="كربلاء">كربلاء</option>
+                                <option value="الموصل">الموصل</option>
+                                <!-- Add more cities -->
+                            </select>
+                            <span asp-validation-for="City" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="District" class="form-label">المنطقة *</label>
+                            <input asp-for="District" class="form-control" required>
+                            <span asp-validation-for="District" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Location" class="form-label">العنوان التفصيلي</label>
+                            <input asp-for="Location" class="form-control">
+                        </div>
+                    </div>
+
+                    <!-- Account Type -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <h5 class="text-primary">
+                                <i class="fas fa-user-tag me-2"></i>
+                                نوع الحساب
+                            </h5>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="card border-2 account-type-card" data-type="Buyer">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-shopping-cart fa-3x text-primary mb-3"></i>
+                                            <h5>مشتري</h5>
+                                            <p class="text-muted">أريد إضافة طلبات والحصول على عروض من المتاجر</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-2 account-type-card" data-type="Seller">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-store fa-3x text-success mb-3"></i>
+                                            <h5>بائع</h5>
+                                            <p class="text-muted">أملك متجر وأريد تلقي طلبات من العملاء</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <input asp-for="UserType" type="hidden" id="userTypeInput">
+                            <span asp-validation-for="UserType" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Store Information (for sellers) -->
+                    <div id="storeInfo" class="row g-3 mb-4" style="display: none;">
+                        <div class="col-12">
+                            <h5 class="text-primary">
+                                <i class="fas fa-store me-2"></i>
+                                معلومات المتجر
+                            </h5>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="StoreName" class="form-label">اسم المتجر *</label>
+                            <input asp-for="StoreName" class="form-control">
+                            <span asp-validation-for="StoreName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="StoreCategories" class="form-label">فئات المتجر *</label>
+                            <select asp-for="StoreCategories" class="form-control" multiple>
+                                @foreach (var category in ViewBag.Categories as List<Category>)
+                                {
+                                    <option value="@category.Id">@category.Name</option>
+                                }
+                            </select>
+                            <div class="form-text">اختر الفئات التي يتخصص بها متجرك</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="StoreDescription" class="form-label">وصف المتجر</label>
+                            <textarea asp-for="StoreDescription" class="form-control" rows="3"
+                                      placeholder="اكتب وصف مختصر عن متجرك ونشاطك..."></textarea>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="WebsiteUrl1" class="form-label">رابط الموقع الأول</label>
+                            <input asp-for="WebsiteUrl1" class="form-control" placeholder="https://example.com">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="WebsiteUrl2" class="form-label">رابط الموقع الثاني</label>
+                            <input asp-for="WebsiteUrl2" class="form-control" placeholder="https://facebook.com/yourstore">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="WebsiteUrl3" class="form-label">رابط الموقع الثالث</label>
+                            <input asp-for="WebsiteUrl3" class="form-control" placeholder="https://instagram.com/yourstore">
+                        </div>
+                    </div>
+
+                    <!-- Profile Image -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <label asp-for="ProfileImage" class="form-label">صورة الملف الشخصي</label>
+                            <input asp-for="ProfileImage" type="file" class="form-control" accept="image/*">
+                            <div class="form-text">اختياري - يفضل صورة واضحة بحجم مناسب</div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-custom btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>
+                            إنشاء الحساب
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Account type selection
+        document.querySelectorAll('.account-type-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove active class from all cards
+                document.querySelectorAll('.account-type-card').forEach(c => {
+                    c.classList.remove('border-primary', 'bg-light');
+                });
+
+                // Add active class to selected card
+                this.classList.add('border-primary', 'bg-light');
+
+                // Set hidden input value
+                const userType = this.getAttribute('data-type');
+                document.getElementById('userTypeInput').value = userType;
+
+                // Show/hide store information
+                const storeInfo = document.getElementById('storeInfo');
+                if (userType === 'Seller') {
+                    storeInfo.style.display = 'block';
+                    // Make store fields required
+                    document.querySelector('[name="StoreName"]').required = true;
+                    document.querySelector('[name="StoreCategories"]').required = true;
+                } else {
+                    storeInfo.style.display = 'none';
+                    // Remove required from store fields
+                    document.querySelector('[name="StoreName"]').required = false;
+                    document.querySelector('[name="StoreCategories"]').required = false;
+                }
+            });
+        });
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const userType = document.getElementById('userTypeInput').value;
+            if (!userType) {
+                e.preventDefault();
+                alert('يرجى اختيار نوع الحساب');
+                return false;
+            }
+        });
+    </script>
+}

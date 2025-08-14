@@ -1,0 +1,129 @@
+﻿@model List<Category>
+@{
+    ViewData["Title"] = "إدارة الفئات";
+}
+
+<!-- Actions -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>إدارة الفئات</h3>
+    <a href="/Admin/Categories/Create" class="btn btn-admin">
+        <i class="fas fa-plus me-2"></i>
+        إضافة فئة جديدة
+    </a>
+</div>
+
+<!-- Categories List -->
+<div class="card-admin">
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="accordion" id="categoriesAccordion">
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    var category = Model[i];
+                    <div class="accordion-item mb-3">
+                        <h2 class="accordion-header" id="heading@(category.Id)">
+                            <button class="accordion-button collapsed d-flex justify-content-between align-items-center"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#collapse@(category.Id)">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-folder me-2"></i>
+                                    <strong>@category.Name</strong>
+                                    <span class="badge bg-primary ms-2">@category.SubCategories1.Count فرعية</span>
+                                    @if (!category.IsActive)
+                                    {
+                                        <span class="badge bg-danger ms-2">غير مفعل</span>
+                                    }
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapse@(category.Id)" class="accordion-collapse collapse"
+                             data-bs-parent="#categoriesAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        @if (!string.IsNullOrEmpty(category.Description))
+                                        {
+                                            <p class="text-muted">@category.Description</p>
+                                        }
+
+                                        <!-- Sub Categories Level 1 -->
+                                        @if (category.SubCategories1.Any())
+                                        {
+                                            <h6 class="mt-3 mb-2">الفئات الفرعية الأولى:</h6>
+                                            <div class="ms-3">
+                                                @foreach (var sub1 in category.SubCategories1)
+                                                {
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <div>
+                                                            <i class="fas fa-folder-open me-2"></i>
+                                                            @sub1.Name
+                                                            @if (sub1.SubCategories2.Any())
+                                                            {
+                                                                <span class="badge bg-secondary ms-2">@sub1.SubCategories2.Count فرعية</span>
+                                                            }
+                                                        </div>
+                                                        <div>
+                                                            <a href="/Admin/Categories/CreateSubCategory2/@sub1.Id"
+                                                               class="btn btn-outline-primary btn-sm">
+                                                                <i class="fas fa-plus"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Sub Categories Level 2 -->
+                                                    @if (sub1.SubCategories2.Any())
+                                                    {
+                                                        <div class="ms-4 mb-3">
+                                                            @foreach (var sub2 in sub1.SubCategories2)
+                                                            {
+                                                                <div class="d-flex align-items-center mb-1">
+                                                                    <i class="fas fa-file me-2 text-muted"></i>
+                                                                    <small>@sub2.Name</small>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    }
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="d-grid gap-2">
+                                            <a href="/Admin/Categories/Edit/@category.Id" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-edit me-1"></i>
+                                                تعديل
+                                            </a>
+                                            <a href="/Admin/Categories/CreateSubCategory1/@category.Id" class="btn btn-outline-success btn-sm">
+                                                <i class="fas fa-plus me-1"></i>
+                                                إضافة فئة فرعية
+                                            </a>
+                                            <form method="post" action="/Admin/Categories/Delete/@category.Id"
+                                                  onsubmit="return confirm('هل أنت متأكد من حذف هذه الفئة؟')">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                                    <i class="fas fa-trash me-1"></i>
+                                                    حذف
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-tags fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">لا توجد فئات</h5>
+                <p class="text-muted">ابدأ بإضافة الفئات الرئيسية لموقعك</p>
+                <a href="/Admin/Categories/Create" class="btn btn-admin">
+                    <i class="fas fa-plus me-2"></i>
+                    إضافة أول فئة
+                </a>
+            </div>
+        }
+    </div>
+</div>

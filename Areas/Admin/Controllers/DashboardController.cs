@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using ReverseMarket.Data;
 using ReverseMarket.Models;
+using ReverseMarket.Areas.Admin.Models;
 
 namespace ReverseMarket.Areas.Admin.Controllers
 {
@@ -35,15 +36,5 @@ namespace ReverseMarket.Areas.Admin.Controllers
 
             return View(model);
         }
-    }
-
-    public class AdminDashboardViewModel
-    {
-        public int TotalUsers { get; set; }
-        public int TotalRequests { get; set; }
-        public int PendingRequests { get; set; }
-        public int TotalStores { get; set; }
-        public int TotalCategories { get; set; }
-        public List<Request> RecentRequests { get; set; } = new();
     }
 }

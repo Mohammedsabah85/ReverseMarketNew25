@@ -1,0 +1,66 @@
+﻿@model VerifyOTPViewModel
+@{
+    ViewData["Title"] = "تأكيد رمز التحقق";
+}
+
+<div class="container-custom">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card-custom">
+                <div class="text-center mb-4">
+                    <i class="fas fa-mobile-alt fa-3x text-primary mb-3"></i>
+                    <h1 class="h3 text-primary">تأكيد رمز التحقق</h1>
+                    <p class="text-muted">تم إرسال رمز التحقق إلى واتساب الخاص بك</p>
+                </div>
+
+                <form asp-action="VerifyOTP" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-4">
+                        <label asp-for="OTP" class="form-label">رمز التحقق *</label>
+                        <input asp-for="OTP" class="form-control text-center fs-4"
+                               placeholder="0000" maxlength="4" required style="letter-spacing: 8px;">
+                        <span asp-validation-for="OTP" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-custom w-100">
+                        <i class="fas fa-check me-2"></i>
+                        تأكيد الرمز
+                    </button>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="text-muted small mb-2">لم تتلق الرمز؟</p>
+                    <a href="/Account/Login" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-redo me-1"></i>
+                        إعادة الإرسال
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-focus and auto-move between digits
+        document.getElementById('OTP').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            e.target.value = value;
+        });
+
+        // Auto-submit when 4 digits are entered
+        document.getElementById('OTP').addEventListener('input', function(e) {
+            if (e.target.value.length === 4) {
+                // Optional: Auto-submit after a short delay
+                setTimeout(() => {
+                    if (e.target.value.length === 4) {
+                        e.target.closest('form').submit();
+                    }
+                }, 500);
+            }
+        });
+    </script>
+}

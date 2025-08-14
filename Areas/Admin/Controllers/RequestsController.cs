@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using ReverseMarket.Data;
 using ReverseMarket.Models;
+using ReverseMarket.Areas.Admin.Models;
 
 namespace ReverseMarket.Areas.Admin.Controllers
 {
@@ -130,13 +131,5 @@ namespace ReverseMarket.Areas.Admin.Controllers
                 }
             }
         }
-    }
-
-    public class AdminRequestsViewModel
-    {
-        public List<Request> Requests { get; set; } = new();
-        public int CurrentPage { get; set; }
-        public int TotalPages { get; set; }
-        public RequestStatus? StatusFilter { get; set; }
     }
 }

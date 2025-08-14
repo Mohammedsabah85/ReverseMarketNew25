@@ -1,0 +1,210 @@
+﻿@model CreateRequestViewModel
+@{
+    ViewData["Title"] = "إضافة طلب جديد";
+}
+
+<div class="container-custom">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card-custom">
+                <div class="text-center mb-4">
+                    <h1 class="display-6 text-primary">
+                        <i class="fas fa-plus-circle me-3"></i>
+                        إضافة طلب جديد
+                    </h1>
+                    <p class="text-muted">أضف طلبك بالتفصيل وسنجد لك أفضل المتاجر</p>
+                </div>
+
+                <form asp-action="Create" method="post" enctype="multipart/form-data" id="requestForm">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <!-- Basic Information -->
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="Title" class="form-label">عنوان الطلب *</label>
+                            <input asp-for="Title" class="form-control" placeholder="مثال: مطلوب جهاز لابتوب للعمل">
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label">تفاصيل الطلب *</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"
+                                      placeholder="اكتب تفاصيل دقيقة عما تحتاجه (المواصفات، الميزانية، الموعد المطلوب...)"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Category Selection -->
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-4">
+                            <label asp-for="CategoryId" class="form-label">الفئة الرئيسية *</label>
+                            <select asp-for="CategoryId" class="form-control" id="categorySelect" required>
+                                <option value="">اختر الفئة</option>
+                                @foreach (var category in ViewBag.Categories as List<Category>)
+                                {
+                                    <option value="@category.Id">@category.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="SubCategory1Id" class="form-label">الفئة الفرعية الأولى</label>
+                            <select asp-for="SubCategory1Id" class="form-control" id="subCategory1Select">
+                                <option value="">اختر التصنيف الفرعي الأول</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="SubCategory2Id" class="form-label">الفئة الفرعية الثانية</label>
+                            <select asp-for="SubCategory2Id" class="form-control" id="subCategory2Select">
+                                <option value="">اختر التصنيف الفرعي الثاني</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Location Information -->
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-4">
+                            <label asp-for="City" class="form-label">المحافظة *</label>
+                            <select asp-for="City" class="form-control" required>
+                                <option value="">اختر المحافظة</option>
+                                <option value="بغداد">بغداد</option>
+                                <option value="البصرة">البصرة</option>
+                                <option value="أربيل">أربيل</option>
+                                <option value="النجف">النجف</option>
+                                <option value="كربلاء">كربلاء</option>
+                                <option value="الموصل">الموصل</option>
+                                <option value="السليمانية">السليمانية</option>
+                                <option value="بابل">بابل</option>
+                                <option value="دهوك">دهوك</option>
+                                <option value="كركوك">كركوك</option>
+                                <option value="الأنبار">الأنبار</option>
+                                <option value="ديالى">ديالى</option>
+                                <option value="صلاح الدين">صلاح الدين</option>
+                                <option value="واسط">واسط</option>
+                                <option value="ذي قار">ذي قار</option>
+                                <option value="المثنى">المثنى</option>
+                                <option value="القادسية">القادسية</option>
+                                <option value="ميسان">ميسان</option>
+                            </select>
+                            <span asp-validation-for="City" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="District" class="form-label">المنطقة *</label>
+                            <input asp-for="District" class="form-control" placeholder="مثال: الكرادة، المعقل، عنكاوا">
+                            <span asp-validation-for="District" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Location" class="form-label">العنوان التفصيلي</label>
+                            <input asp-for="Location" class="form-control" placeholder="الشارع، رقم البناء (اختياري)">
+                        </div>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="mt-4">
+                        <label for="images" class="form-label">الصور (اختياري)</label>
+                        <input type="file" name="Images" id="images" class="form-control" multiple accept="image/*"
+                               onchange="previewImages(this, document.getElementById('imagePreview'))">
+                        <div class="form-text">يمكنك رفع حتى 3 صور بحجم أقصى 5 ميجابايت لكل صورة</div>
+                        <div id="imagePreview" class="row g-2 mt-2"></div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-custom btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            إرسال الطلب
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Category and subcategory dynamic loading
+        document.getElementById('categorySelect').addEventListener('change', function() {
+            const categoryId = this.value;
+            const subCategory1Select = document.getElementById('subCategory1Select');
+            const subCategory2Select = document.getElementById('subCategory2Select');
+
+            loadSubCategories1(categoryId, subCategory1Select);
+            subCategory2Select.innerHTML = '<option value="">اختر التصنيف الفرعي الثاني</option>';
+        });
+
+        document.getElementById('subCategory1Select').addEventListener('change', function() {
+            const subCategory1Id = this.value;
+            const subCategory2Select = document.getElementById('subCategory2Select');
+
+            loadSubCategories2(subCategory1Id, subCategory2Select);
+        });
+
+        function loadSubCategories1(categoryId, targetSelect) {
+            if (!categoryId) {
+                targetSelect.innerHTML = '<option value="">اختر التصنيف الفرعي الأول</option>';
+                return;
+            }
+
+            fetch(`/Requests/GetSubCategories1?categoryId=${categoryId}`)
+                .then(response => response.json())
+                .then(data => {
+                    targetSelect.innerHTML = '<option value="">اختر التصنيف الفرعي الأول</option>';
+                    data.forEach(item => {
+                        targetSelect.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function loadSubCategories2(subCategory1Id, targetSelect) {
+            if (!subCategory1Id) {
+                targetSelect.innerHTML = '<option value="">اختر التصنيف الفرعي الثاني</option>';
+                return;
+            }
+
+            fetch(`/Requests/GetSubCategories2?subCategory1Id=${subCategory1Id}`)
+                .then(response => response.json())
+                .then(data => {
+                    targetSelect.innerHTML = '<option value="">اختر التصنيف الفرعي الثاني</option>';
+                    data.forEach(item => {
+                        targetSelect.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Image preview functionality
+        function previewImages(input, previewContainer) {
+            previewContainer.innerHTML = '';
+
+            if (input.files) {
+                Array.from(input.files).forEach((file, index) => {
+                    if (index < 3) { // Maximum 3 images
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const div = document.createElement('div');
+                            div.className = 'col-4 position-relative';
+                            div.innerHTML = `
+                                <img src="${e.target.result}" class="img-fluid rounded" style="height: 120px; object-fit: cover;">
+                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 start-0 m-1" onclick="removeImage(this)">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            `;
+                            previewContainer.appendChild(div);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        }
+
+        function removeImage(button) {
+            button.parentElement.remove();
+        }
+    </script>
+}

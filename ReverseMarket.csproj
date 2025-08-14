@@ -25,9 +25,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Views\Stores\" />
-		<Folder Include="Views\Account\" />
-		<Folder Include="Views\Requests\" />
 		<Folder Include="wwwroot\uploads\advertisements\" />
 		<Folder Include="wwwroot\uploads\requests\" />
 		<Folder Include="wwwroot\uploads\profiles\" />
