@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReverseMarket.Data;
-using ReverseMarket.Models;
+using ReverseMarket.Models; // تأكد من استيراد الـ Models namespace
 using System.ComponentModel.DataAnnotations;
 
 namespace ReverseMarket.Controllers
@@ -44,7 +44,8 @@ namespace ReverseMarket.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            var model = new RequestsViewModel
+            // استخدم النوع الصحيح من ReverseMarket.Models
+            var model = new ReverseMarket.Models.RequestsViewModel
             {
                 Requests = requests,
                 Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync(),
@@ -175,41 +176,5 @@ namespace ReverseMarket.Controllers
 
             return Json(subCategories);
         }
-    }
-
-    public class RequestsViewModel
-    {
-        public List<Request> Requests { get; set; } = new();
-        public List<Category> Categories { get; set; } = new();
-        public int CurrentPage { get; set; }
-        public int TotalPages { get; set; }
-        public string? Search { get; set; }
-        public int? SelectedCategoryId { get; set; }
-    }
-
-    public class CreateRequestViewModel
-    {
-        [Required]
-        public string Title { get; set; }
-
-        [Required]
-        public string Description { get; set; }
-
-        [Required]
-        public int CategoryId { get; set; }
-
-        public int? SubCategory1Id { get; set; }
-
-        public int? SubCategory2Id { get; set; }
-
-        [Required]
-        public string City { get; set; }
-
-        [Required]
-        public string District { get; set; }
-
-        public string? Location { get; set; }
-
-        public List<IFormFile>? Images { get; set; }
     }
 }

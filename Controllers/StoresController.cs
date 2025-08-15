@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReverseMarket.Data;
-using ReverseMarket.Models;
+using ReverseMarket.Models; // تأكد من استيراد الـ Models namespace
 
 namespace ReverseMarket.Controllers
 {
@@ -41,7 +41,8 @@ namespace ReverseMarket.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            var model = new StoresViewModel
+            // استخدم النوع الصحيح من ReverseMarket.Models
+            var model = new ReverseMarket.Models.StoresViewModel
             {
                 Stores = stores,
                 Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync(),
@@ -72,15 +73,5 @@ namespace ReverseMarket.Controllers
 
             return View(store);
         }
-    }
-
-    public class StoresViewModel
-    {
-        public List<User> Stores { get; set; } = new();
-        public List<Category> Categories { get; set; } = new();
-        public int CurrentPage { get; set; }
-        public int TotalPages { get; set; }
-        public string? Search { get; set; }
-        public int? SelectedCategoryId { get; set; }
     }
 }

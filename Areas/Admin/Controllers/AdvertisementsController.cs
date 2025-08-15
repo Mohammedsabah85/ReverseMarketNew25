@@ -87,30 +87,29 @@ namespace ReverseMarket.Areas.Admin.Controllers
 
             return $"/uploads/advertisements/{fileName}";
         }
+    
+
+[HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var advertisement = await _context.Advertisements.FindAsync(id);
+            if (advertisement != null)
+            {
+                // حذف الصورة من الخادم
+                if (!string.IsNullOrEmpty(advertisement.ImagePath))
+                {
+                    var imagePath = Path.Combine(_webHostEnvironment.WebRootPath, advertisement.ImagePath.TrimStart('/'));
+                    if (System.IO.File.Exists(imagePath))
+                    {
+                        System.IO.File.Delete(imagePath);
+                    }
+                }
+
+                _context.Advertisements.Remove(advertisement);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Index");
+        }
     }
-
-    //public class CreateAdvertisementViewModel
-    //{
-    //    [Required]
-    //    public string Title { get; set; }
-
-    //    public string? Description { get; set; }
-
-    //    [Required]
-    //    public IFormFile Image { get; set; }
-
-    //    public string? LinkUrl { get; set; }
-
-    //    [Required]
-    //    public AdvertisementType Type { get; set; }
-
-    //    public int DisplayOrder { get; set; }
-
-    //    public bool IsActive { get; set; } = true;
-
-    //    [Required]
-    //    public DateTime StartDate { get; set; }
-
-    //    public DateTime? EndDate { get; set; }
-    //}
 }

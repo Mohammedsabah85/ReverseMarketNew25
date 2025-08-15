@@ -1,4 +1,6 @@
-﻿namespace ReverseMarket.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ReverseMarket.Models
 {
     public class HomeViewModel
     {

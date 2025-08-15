@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReverseMarket.Data;
-using ReverseMarket.Models;
+using ReverseMarket.Models; // تأكد من استيراد الـ Models namespace
+using System.Diagnostics;
 
 namespace ReverseMarket.Controllers
 {
@@ -16,7 +17,8 @@ namespace ReverseMarket.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var model = new HomeViewModel
+            // استخدم النوع الصحيح من ReverseMarket.Models
+            var model = new ReverseMarket.Models.HomeViewModel
             {
                 Advertisements = await _context.Advertisements
                     .Where(a => a.IsActive && a.Type == AdvertisementType.Banner)
@@ -41,13 +43,26 @@ namespace ReverseMarket.Controllers
 
             return View(model);
         }
-    }
 
-    public class HomeViewModel
-    {
-        public List<Advertisement> Advertisements { get; set; } = new();
-        public List<Category> Categories { get; set; } = new();
-        public List<Request> RecentRequests { get; set; } = new();
-        public SiteSettings? SiteSettings { get; set; }
+        public IActionResult About()
+        {
+            return View();
+        }
+
+        public IActionResult Contact()
+        {
+            return View();
+        }
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
     }
 }

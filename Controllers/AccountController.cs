@@ -18,7 +18,12 @@ namespace ReverseMarket.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            return View();
+            // إنشاء model فارغ لتجنب NullReferenceException
+            var model = new LoginViewModel
+            {
+                CountryCode = "+964"
+            };
+            return View(model);
         }
 
         [HttpPost]
@@ -56,7 +61,8 @@ namespace ReverseMarket.Controllers
         [HttpGet]
         public IActionResult VerifyOTP()
         {
-            return View();
+            var model = new VerifyOTPViewModel();
+            return View(model);
         }
 
         [HttpPost]
@@ -97,7 +103,8 @@ namespace ReverseMarket.Controllers
         [HttpGet]
         public IActionResult VerifyPhone()
         {
-            return View();
+            var model = new VerifyPhoneViewModel();
+            return View(model);
         }
 
         [HttpPost]
@@ -122,7 +129,8 @@ namespace ReverseMarket.Controllers
         public async Task<IActionResult> CreateAccount()
         {
             ViewBag.Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync();
-            return View();
+            var model = new CreateAccountViewModel();
+            return View(model);
         }
 
         [HttpPost]
@@ -135,7 +143,7 @@ namespace ReverseMarket.Controllers
 
                 var user = new User
                 {
-                    PhoneNumber = phoneNumber,
+                    PhoneNumber = phoneNumber ?? "",
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     DateOfBirth = model.DateOfBirth,
@@ -194,70 +202,5 @@ namespace ReverseMarket.Controllers
             var random = new Random();
             return random.Next(1000, 9999).ToString();
         }
-    }
-
-    public class LoginViewModel
-    {
-        [Required]
-        public string PhoneNumber { get; set; }
-
-        public string CountryCode { get; set; } = "+964";
-
-        public bool AcceptTerms { get; set; }
-    }
-
-    public class VerifyOTPViewModel
-    {
-        [Required]
-        public string OTP { get; set; }
-    }
-
-    public class VerifyPhoneViewModel
-    {
-        [Required]
-        public string VerificationCode { get; set; }
-    }
-
-    public class CreateAccountViewModel
-    {
-        [Required]
-        public string FirstName { get; set; }
-
-        [Required]
-        public string LastName { get; set; }
-
-        [Required]
-        public DateTime DateOfBirth { get; set; }
-
-        [Required]
-        public string Gender { get; set; }
-
-        [Required]
-        public string City { get; set; }
-
-        [Required]
-        public string District { get; set; }
-
-        public string? Location { get; set; }
-
-        public string? Email { get; set; }
-
-        public IFormFile? ProfileImage { get; set; }
-
-        [Required]
-        public UserType UserType { get; set; }
-
-        // Store fields (for sellers)
-        public string? StoreName { get; set; }
-
-        public string? StoreDescription { get; set; }
-
-        public string? WebsiteUrl1 { get; set; }
-
-        public string? WebsiteUrl2 { get; set; }
-
-        public string? WebsiteUrl3 { get; set; }
-
-        public List<int>? StoreCategories { get; set; }
     }
 }

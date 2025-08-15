@@ -72,7 +72,9 @@ namespace ReverseMarket.Areas.Admin.Controllers
             return View(category);
         }
 
+        // تصحيح routing للفئات الفرعية الأولى
         [HttpGet]
+        [Route("Admin/Categories/CreateSubCategory1/{categoryId:int}")]
         public async Task<IActionResult> CreateSubCategory1(int categoryId)
         {
             var category = await _context.Categories.FindAsync(categoryId);
@@ -82,11 +84,13 @@ namespace ReverseMarket.Areas.Admin.Controllers
             }
 
             ViewBag.Category = category;
-            return View();
+            var model = new SubCategory1 { CategoryId = categoryId };
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Route("Admin/Categories/CreateSubCategory1/{categoryId:int}")]
         public async Task<IActionResult> CreateSubCategory1(SubCategory1 subCategory)
         {
             if (ModelState.IsValid)
@@ -101,7 +105,9 @@ namespace ReverseMarket.Areas.Admin.Controllers
             return View(subCategory);
         }
 
+        // تصحيح routing للفئات الفرعية الثانية
         [HttpGet]
+        [Route("Admin/Categories/CreateSubCategory2/{subCategory1Id:int}")]
         public async Task<IActionResult> CreateSubCategory2(int subCategory1Id)
         {
             var subCategory1 = await _context.SubCategories1
@@ -114,11 +120,13 @@ namespace ReverseMarket.Areas.Admin.Controllers
             }
 
             ViewBag.SubCategory1 = subCategory1;
-            return View();
+            var model = new SubCategory2 { SubCategory1Id = subCategory1Id };
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Route("Admin/Categories/CreateSubCategory2/{subCategory1Id:int}")]
         public async Task<IActionResult> CreateSubCategory2(SubCategory2 subCategory)
         {
             if (ModelState.IsValid)

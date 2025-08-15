@@ -1,75 +1,196 @@
-﻿<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - السوق العكسي</title>
+﻿@model HomeViewModel
+@{
+    ViewData["Title"] = "الرئيسية";
+}
 
-    <!-- Bootstrap RTL CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.rtl.min.css" rel="stylesheet" />
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1>مرحباً بك في السوق العكسي</h1>
+        <p>أضف طلبك ودع المتاجر تتنافس لخدمتك</p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="/Requests/Create" class="btn-custom">أضف طلبك الآن</a>
+            <a href="/Requests" class="btn-outline-custom">تصفح الطلبات</a>
+        </div>
+    </div>
+</section>
 
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+<!-- Search Section -->
+<section class="search-section">
+    <div class="container">
+        <form class="search-form" method="get" action="/Requests">
+            <div class="flex-grow-1">
+                <input type="text" name="search" class="form-control" placeholder="ابحث عن طلب معين...">
+            </div>
+            <div>
+                <select name="categoryId" class="form-control">
+                    <option value="">جميع الفئات</option>
+                    @foreach (var category in Model.Categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-custom">
+                    <i class="fas fa-search me-1"></i>
+                    بحث
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
 
-    <!-- Google Fonts - Arabic -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet" />
+<!-- Categories Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="section-title">
+            <h2>أفضل الفئات</h2>
+            <p>اختر من بين مجموعة واسعة من الفئات</p>
+        </div>
 
-    <style>
-        :root {
-            --primary-color: #2c5aa0;
-            --secondary-color: #34c759;
-            --accent-color: #ff6b35;
-            --text-color: #2c3e50;
-            --light-bg: #f8f9fa;
-            --border-color: #e9ecef;
-        }
+        <div class="row g-4">
+            @foreach (var category in Model.Categories.Take(8))
+            {
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="category-card">
+                        <i class="fas fa-folder"></i>
+                        <h5>@category.Name</h5>
+                        <p class="text-muted">@category.Description</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
 
-        * {
-            font-family: 'Cairo', sans-serif;
-        }
+<!-- Recent Requests Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="section-title">
+            <h2>الطلبات المضافة مؤخراً</h2>
+            <p>آخر الطلبات المتاحة من العملاء</p>
+        </div>
 
-        body {
-            background-color: var(--light-bg);
-            color: var(--text-color);
-            line-height: 1.6;
-        }
+        <div class="row g-4">
+            @foreach (var request in Model.RecentRequests.Take(6))
+            {
+                <div class="col-lg-4 col-md-6">
+                    <div class="request-card">
+                        @if (request.Images.Any())
+                        {
+                            <img src="@request.Images.First().ImagePath" alt="@request.Title">
+                        }
+                        else
+                        {
+                            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="fas fa-image fa-3x text-muted"></i>
+                            </div>
+                        }
+                    <div class="request-card-body">
+                        <span class="badge-custom">@request.Category.Name</span>
+                        <h6 class="mt-2">@request.Title</h6>
+                        <p class="text-muted small">@request.City - @request.District</p>
+                        <p class="text-muted">
+                            @(request.Description.Length > 80 ?
+                                                        request.Description.Substring(0, 80) + "..." :
+                                                        request.Description)
+                        </p>
+                        <a href="/Requests/Details/@request.Id" class="btn btn-outline-custom btn-sm">عرض التفاصيل</a>
+                    </div>
+                </div>
+            </div>
+                        }
+        </div>
 
-        .navbar {
-            background: linear-gradient(135deg, var(--primary-color), #1e4080);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 1rem 0;
-        }
+        <div class="text-center mt-4">
+            <a href="/Requests" class="btn btn-custom">عرض جميع الطلبات</a>
+        </div>
+    </div>
+</section>
 
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: white !important;
-        }
+<!-- How It Works Section -->
+<section class="how-it-works">
+    <div class="container">
+        <div class="section-title">
+            <h2>كيف يعمل السوق العكسي؟</h2>
+            <p>خطوات بسيطة للحصول على ما تريد</p>
+        </div>
 
-        .navbar-nav .nav-link {
-            color: rgba(255,255,255,0.9) !important;
-            font-weight: 500;
-            margin: 0 0.5rem;
-            padding: 0.5rem 1rem !important;
-            border-radius: 25px;
-            transition: all 0.3s ease;
-        }
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h5>أضف طلبك</h5>
+                    <p>اكتب تفاصيل ما تحتاجه بوضوح</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h5>انتظر الموافقة</h5>
+                    <p>سيتم مراجعة طلبك والموافقة عليه</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h5>المتاجر تتواصل معك</h5>
+                    <p>ستحصل على عروض من المتاجر المختصة</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h5>اختر الأفضل</h5>
+                    <p>قارن العروض واختر الأنسب لك</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-        .navbar-nav .nav-link:hover,
-        .navbar-nav .nav-link.active {
-            background-color: rgba(255,255,255,0.1);
-            color: white !important;
-            transform: translateY(-1px);
-        }
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item">
+                    <h3>@Model.RecentRequests.Count()+1500</h3>
+                    <p>طلب منجز</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item">
+                    <h3>500+</h3>
+                    <p>متجر مسجل</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item">
+                    <h3>2000+</h3>
+                    <p>عميل راضي</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item">
+                    <h3>@Model.Categories.Count()</h3>
+                    <p>فئة متاحة</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-        .hero-section {
-            background: linear-gradient(135deg, rgba(44, 90, 160, 0.9), rgba(30, 64, 128, 0.9)), url('/images/hero-bg.jpg');
-            background-size: cover;
-            background-position: center;
-            padding: 4rem 0;
-            color: white;
-            text-align: center;
-        }
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, rgba(44, 90, 160, 0.9), rgba(30, 64, 128, 0.9)), url('/images/hero-bg.jpg');
+        background-size: cover;
+        background-position: center;
+        padding: 4rem 0;
+        color: white;
+        text-align: center;
+    }
 
         .hero-section h1 {
             font-size: 3rem;
@@ -84,58 +205,40 @@
             opacity: 0.9;
         }
 
-        .btn-custom {
-            background: linear-gradient(135deg, var(--secondary-color), #28a745);
-            border: none;
-            color: white;
-            padding: 0.75rem 2rem;
-            border-radius: 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(52, 199, 89, 0.4);
-            color: white;
-        }
-
-        .btn-outline-custom {
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
-            background: transparent;
-            padding: 0.75rem 2rem;
-            border-radius: 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
+    .btn-outline-custom {
+        border: 2px solid white;
+        color: white;
+        background: transparent;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
 
         .btn-outline-custom:hover {
-            background: var(--primary-color);
-            color: white;
+            background: white;
+            color: var(--primary-color);
             transform: translateY(-2px);
         }
 
-        .search-section {
-            background: white;
-            padding: 2rem 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-top: -3rem;
-            border-radius: 15px;
-            position: relative;
-            z-index: 10;
-        }
+    .search-section {
+        background: white;
+        padding: 2rem 0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-top: -3rem;
+        border-radius: 15px;
+        position: relative;
+        z-index: 10;
+    }
 
-        .search-form {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
+    .search-form {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
 
         .search-form .form-control {
             border-radius: 25px;
@@ -144,25 +247,20 @@
             font-size: 1rem;
         }
 
-        .search-form .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
-        }
+            .search-form .form-control:focus {
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
+            }
 
-        .search-form .btn {
-            border-radius: 25px;
-            padding: 0.75rem 2rem;
-        }
-
-        .category-card {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            border: 1px solid var(--border-color);
-            height: 100%;
-        }
+    .category-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 1px solid var(--border-color);
+        height: 100%;
+    }
 
         .category-card:hover {
             transform: translateY(-5px);
@@ -176,19 +274,14 @@
             margin-bottom: 1rem;
         }
 
-        .category-card h5 {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .request-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            border: 1px solid var(--border-color);
-            height: 100%;
-        }
+    .request-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid var(--border-color);
+        height: 100%;
+    }
 
         .request-card:hover {
             transform: translateY(-5px);
@@ -201,73 +294,22 @@
             object-fit: cover;
         }
 
-        .request-card-body {
-            padding: 1.5rem;
-        }
+    .request-card-body {
+        padding: 1.5rem;
+    }
 
-        .request-card h6 {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--text-color);
-        }
+    .badge-custom {
+        background: var(--accent-color);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+    }
 
-        .request-card .text-muted {
-            font-size: 0.9rem;
-        }
-
-        .badge-custom {
-            background: var(--accent-color);
-            color: white;
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
-            font-size: 0.8rem;
-        }
-
-        .footer {
-            background: linear-gradient(135deg, #2c3e50, #34495e);
-            color: white;
-            padding: 3rem 0 1rem;
-            margin-top: 4rem;
-        }
-
-        .footer h5 {
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--secondary-color);
-        }
-
-        .footer a {
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .footer a:hover {
-            color: var(--secondary-color);
-        }
-
-        .social-icons a {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            text-align: center;
-            line-height: 40px;
-            border-radius: 50%;
-            margin: 0 0.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .social-icons a:hover {
-            background: var(--secondary-color);
-            transform: translateY(-2px);
-        }
-
-        .section-title {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
+    .section-title {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
 
         .section-title h2 {
             font-weight: 700;
@@ -275,22 +317,17 @@
             margin-bottom: 0.5rem;
         }
 
-        .section-title p {
-            color: #6c757d;
-            font-size: 1.1rem;
-        }
+    .stats-section {
+        background: var(--primary-color);
+        color: white;
+        padding: 3rem 0;
+        margin: 3rem 0;
+    }
 
-        .stats-section {
-            background: var(--primary-color);
-            color: white;
-            padding: 3rem 0;
-            margin: 3rem 0;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 1rem;
-        }
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+    }
 
         .stat-item h3 {
             font-size: 2.5rem;
@@ -298,500 +335,45 @@
             margin-bottom: 0.5rem;
         }
 
-        .stat-item p {
-            font-size: 1.1rem;
-            opacity: 0.9;
+    .how-it-works {
+        background: white;
+        padding: 4rem 0;
+    }
+
+    .step-card {
+        text-align: center;
+        padding: 2rem 1rem;
+    }
+
+    .step-number {
+        width: 60px;
+        height: 60px;
+        background: var(--secondary-color);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0 auto 1rem;
+    }
+
+    @@media (max-width: 768px) {
+        .hero-section h1
+
+    {
+        font-size: 2rem;
+    }
+
+    .search-form {
+        flex-direction: column;
+    }
+
+        .search-form .form-control,
+        .search-form .btn {
+            width: 100%;
         }
 
-        .how-it-works {
-            background: white;
-            padding: 4rem 0;
-        }
-
-        .step-card {
-            text-align: center;
-            padding: 2rem 1rem;
-        }
-
-        .step-number {
-            width: 60px;
-            height: 60px;
-            background: var(--secondary-color);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0 auto 1rem;
-        }
-
-        .form-container {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .form-control {
-            border-radius: 10px;
-            border: 2px solid var(--border-color);
-            padding: 0.75rem 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
-        }
-
-        .pagination .page-link {
-            border-radius: 10px;
-            margin: 0 2px;
-            border: none;
-            color: var(--primary-color);
-        }
-
-        .pagination .page-link:hover,
-        .pagination .page-item.active .page-link {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        @@media (max-width: 768px) {
-            .hero-section h1 {
-                font-size: 2rem;
-            }
-
-            .search-form {
-                flex-direction: column;
-            }
-
-            .search-form .form-control,
-            .search-form .btn {
-                width: 100%;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-store me-2"></i>
-                السوق العكسي
-            </a>
-
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">الرئيسية</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/Requests">الطلبات</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/Stores">المتاجر</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/Home/About">حولنا</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/Home/Contact">تواصل معنا</a>
-                    </li>
-                </ul>
-
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/Requests/Create">إضافة طلب</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/Account/Login">تسجيل دخول</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main>
-        <!-- Hero Section -->
-        <section class="hero-section">
-            <div class="container">
-                <h1>مرحباً بك في السوق العكسي</h1>
-                <p>أضف طلبك ودع المتاجر تتنافس لخدمتك</p>
-                <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="/Requests/Create" class="btn-custom">أضف طلبك الآن</a>
-                    <a href="/Requests" class="btn-outline-custom">تصفح الطلبات</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Search Section -->
-        <section class="search-section">
-            <div class="container">
-                <form class="search-form" method="get" action="/Requests">
-                    <div class="flex-grow-1">
-                        <input type="text" name="search" class="form-control" placeholder="ابحث عن طلب معين...">
-                    </div>
-                    <div>
-                        <select name="categoryId" class="form-control">
-                            <option value="">جميع الفئات</option>
-                            <!-- Categories will be populated dynamically -->
-                        </select>
-                    </div>
-                    <div>
-                        <button type="submit" class="btn btn-custom">
-                            <i class="fas fa-search me-1"></i>
-                            بحث
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </section>
-
-        <!-- Categories Section -->
-        <section class="py-5">
-            <div class="container">
-                <div class="section-title">
-                    <h2>أفضل الفئات</h2>
-                    <p>اختر من بين مجموعة واسعة من الفئات</p>
-                </div>
-
-                <div class="row g-4">
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <div class="category-card">
-                            <i class="fas fa-bolt"></i>
-                            <h5>كهربائيات</h5>
-                            <p class="text-muted">أجهزة ومعدات كهربائية</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <div class="category-card">
-                            <i class="fas fa-home"></i>
-                            <h5>منزلية</h5>
-                            <p class="text-muted">أدوات ومستلزمات منزلية</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <div class="category-card">
-                            <i class="fas fa-car"></i>
-                            <h5>سيارات</h5>
-                            <p class="text-muted">قطع غيار وإكسسوارات</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <div class="category-card">
-                            <i class="fas fa-laptop"></i>
-                            <h5>إلكترونيات</h5>
-                            <p class="text-muted">أجهزة ذكية وحاسوب</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Recent Requests Section -->
-        <section class="py-5 bg-light">
-            <div class="container">
-                <div class="section-title">
-                    <h2>الطلبات المضافة مؤخراً</h2>
-                    <p>آخر الطلبات المتاحة من العملاء</p>
-                </div>
-
-                <div class="row g-4">
-                    <div class="col-lg-4 col-md-6">
-                        <div class="request-card">
-                            <img src="/images/placeholder.jpg" alt="طلب">
-                            <div class="request-card-body">
-                                <span class="badge-custom">كهربائيات</span>
-                                <h6 class="mt-2">مطلوب جهاز تكييف سبليت</h6>
-                                <p class="text-muted small">بغداد - الكرادة</p>
-                                <p class="text-muted">أحتاج إلى جهاز تكييف سبليت بقوة 2 طن...</p>
-                                <a href="#" class="btn btn-outline-custom btn-sm">عرض التفاصيل</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <div class="request-card">
-                            <img src="/images/placeholder.jpg" alt="طلب">
-                            <div class="request-card-body">
-                                <span class="badge-custom">منزلية</span>
-                                <h6 class="mt-2">طقم أثاث غرفة جلوس</h6>
-                                <p class="text-muted small">البصرة - المعقل</p>
-                                <p class="text-muted">أبحث عن طقم أثاث حديث لغرفة الجلوس...</p>
-                                <a href="#" class="btn btn-outline-custom btn-sm">عرض التفاصيل</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <div class="request-card">
-                            <img src="/images/placeholder.jpg" alt="طلب">
-                            <div class="request-card-body">
-                                <span class="badge-custom">إلكترونيات</span>
-                                <h6 class="mt-2">جهاز لابتوب للعمل</h6>
-                                <p class="text-muted small">أربيل - عنكاوا</p>
-                                <p class="text-muted">أحتاج إلى جهاز لابتوب مناسب للعمل...</p>
-                                <a href="#" class="btn btn-outline-custom btn-sm">عرض التفاصيل</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="text-center mt-4">
-                    <a href="/Requests" class="btn btn-custom">عرض جميع الطلبات</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- How It Works Section -->
-        <section class="how-it-works">
-            <div class="container">
-                <div class="section-title">
-                    <h2>كيف يعمل السوق العكسي؟</h2>
-                    <p>خطوات بسيطة للحصول على ما تريد</p>
-                </div>
-
-                <div class="row g-4">
-                    <div class="col-lg-3 col-md-6">
-                        <div class="step-card">
-                            <div class="step-number">1</div>
-                            <h5>أضف طلبك</h5>
-                            <p>اكتب تفاصيل ما تحتاجه بوضوح</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="step-card">
-                            <div class="step-number">2</div>
-                            <h5>انتظر الموافقة</h5>
-                            <p>سيتم مراجعة طلبك والموافقة عليه</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="step-card">
-                            <div class="step-number">3</div>
-                            <h5>المتاجر تتواصل معك</h5>
-                            <p>ستحصل على عروض من المتاجر المختصة</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="step-card">
-                            <div class="step-number">4</div>
-                            <h5>اختر الأفضل</h5>
-                            <p>قارن العروض واختر الأنسب لك</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Stats Section -->
-        <section class="stats-section">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-3 col-md-6">
-                        <div class="stat-item">
-                            <h3>1500+</h3>
-                            <p>طلب منجز</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="stat-item">
-                            <h3>500+</h3>
-                            <p>متجر مسجل</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="stat-item">
-                            <h3>2000+</h3>
-                            <p>عميل راضي</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="stat-item">
-                            <h3>50+</h3>
-                            <p>فئة متاحة</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-4">
-                    <h5>حولنا</h5>
-                    <p>السوق العكسي هو منصة مبتكرة تجمع بين المشترين والبائعين بطريقة جديدة ومميزة.</p>
-                    <div class="social-icons">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-youtube"></i></a>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <h5>اتصل بنا</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2">
-                            <i class="fas fa-phone me-2"></i>
-                            +964 770 123 4567
-                        </li>
-                        <li class="mb-2">
-                            <i class="fab fa-whatsapp me-2"></i>
-                            +964 770 123 4567
-                        </li>
-                        <li class="mb-2">
-                            <i class="fas fa-envelope me-2"></i>
-                            info@reversemarket.iq
-                        </li>
-                    </ul>
-                </div>
-                <div class="col-lg-4">
-                    <h5>روابط مهمة</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="/Home/About">حول المنصة</a></li>
-                        <li class="mb-2"><a href="/Home/Privacy">سياسة الخصوصية</a></li>
-                        <li class="mb-2"><a href="/Home/Terms">سياسة الاستخدام</a></li>
-                        <li class="mb-2"><a href="/Home/Copyright">الحقوق الفكرية</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <hr class="my-4">
-
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <p class="mb-0">&copy; 2024 السوق العكسي. جميع الحقوق محفوظة.</p>
-                </div>
-                <div class="col-md-6 text-end">
-                    <img src="/images/logo.png" alt="السوق العكسي" style="height: 40px;">
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Custom JS -->
-    <script>
-        // Initialize tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
-        });
-
-        // Dynamic category and subcategory loading
-        function loadSubCategories1(categoryId, targetSelect) {
-            if (!categoryId) {
-                targetSelect.innerHTML = '<option value="">اختر التصنيف الفرعي الأول</option>';
-                return;
-            }
-
-            fetch(`/Requests/GetSubCategories1?categoryId=${categoryId}`)
-                .then(response => response.json())
-                .then(data => {
-                    targetSelect.innerHTML = '<option value="">اختر التصنيف الفرعي الأول</option>';
-                    data.forEach(item => {
-                        targetSelect.innerHTML += `<option value="${item.id}">${item.name}</option>`;
-                    });
-                })
-                .catch(error => console.error('Error:', error));
-        }
-
-        function loadSubCategories2(subCategory1Id, targetSelect) {
-            if (!subCategory1Id) {
-                targetSelect.innerHTML = '<option value="">اختر التصنيف الفرعي الثاني</option>';
-                return;
-            }
-
-            fetch(`/Requests/GetSubCategories2?subCategory1Id=${subCategory1Id}`)
-                .then(response => response.json())
-                .then(data => {
-                    targetSelect.innerHTML = '<option value="">اختر التصنيف الفرعي الثاني</option>';
-                    data.forEach(item => {
-                        targetSelect.innerHTML += `<option value="${item.id}">${item.name}</option>`;
-                    });
-                })
-                .catch(error => console.error('Error:', error));
-        }
-
-        // Image preview functionality
-        function previewImages(input, previewContainer) {
-            previewContainer.innerHTML = '';
-
-            if (input.files) {
-                Array.from(input.files).forEach((file, index) => {
-                    if (index < 3) { // Maximum 3 images
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const div = document.createElement('div');
-                            div.className = 'col-4 position-relative';
-                            div.innerHTML = `
-                                <img src="${e.target.result}" class="img-fluid rounded" style="height: 120px; object-fit: cover;">
-                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 start-0 m-1" onclick="removeImage(this)">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            `;
-                            previewContainer.appendChild(div);
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
-            }
-        }
-
-        function removeImage(button) {
-            button.parentElement.remove();
-        }
-
-        // Form validation
-        function validateForm(form) {
-            let isValid = true;
-            const requiredFields = form.querySelectorAll('[required]');
-
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    field.classList.add('is-invalid');
-                    isValid = false;
-                } else {
-                    field.classList.remove('is-invalid');
-                }
-            });
-
-            return isValid;
-        }
-
-        // Auto-resize textarea
-        function autoResize(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
-        }
-
-        // Initialize auto-resize for textareas
-        document.querySelectorAll('textarea').forEach(textarea => {
-            textarea.addEventListener('input', () => autoResize(textarea));
-            autoResize(textarea); // Initial resize
-        });
-    </script>
-</body>
-</html>
+    }
+</style>
