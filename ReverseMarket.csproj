@@ -26,9 +26,9 @@
 
 	<ItemGroup>
 		<Folder Include="wwwroot\uploads\advertisements\" />
+		<Folder Include="wwwroot\uploads\site\" />
 		<Folder Include="wwwroot\uploads\requests\" />
 		<Folder Include="wwwroot\uploads\profiles\" />
-		<Folder Include="wwwroot\uploads\site\" />
 	</ItemGroup>
 
 </Project>

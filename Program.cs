@@ -61,6 +61,16 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+
+// ≈⁄œ«œ œ⁄„ «·’Ê— Ê«·„·›«  «·„—›Ê⁄…
+app.UseStaticFiles(new StaticFileOptions
+{
+    RequestPath = "/uploads",
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads")),
+    ServeUnknownFileTypes = false,
+    DefaultContentType = "application/octet-stream"
+});
 app.UseRouting();
 app.UseSession(); // ÌÃ» √‰ ÌﬂÊ‰ ﬁ»· UseAuthorization
 app.UseAuthorization();
@@ -89,6 +99,7 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+CreateUploadDirectories(app.Environment.WebRootPath);
 
 // ≈‰‘«¡ ﬁ«⁄œ… «·»Ì«‰«  ≈–« ·„  ﬂ‰ „ÊÃÊœ…
 using (var scope = app.Services.CreateScope())
@@ -106,3 +117,24 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+void CreateUploadDirectories(string webRootPath)
+{
+    var uploadPaths = new[]
+    {
+        Path.Combine(webRootPath, "uploads"),
+        Path.Combine(webRootPath, "uploads", "requests"),
+        Path.Combine(webRootPath, "uploads", "profiles"),
+        Path.Combine(webRootPath, "uploads", "advertisements"),
+        Path.Combine(webRootPath, "uploads", "site"),
+        Path.Combine(webRootPath, "logs")
+    };
+
+    foreach (var path in uploadPaths)
+    {
+        if (!Directory.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+            Console.WriteLine($"Created directory: {path}");
+        }
+    }
+}

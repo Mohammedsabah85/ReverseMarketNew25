@@ -1,25 +1,27 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReverseMarket.Data;
-using ReverseMarket.Models; // تأكد من استيراد الـ Models namespace
+using ReverseMarket.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace ReverseMarket.Controllers
 {
     public class RequestsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public RequestsController(ApplicationDbContext context)
+        public RequestsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
-            _context = context;
+            _dbContext = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public async Task<IActionResult> Index(string search, int? categoryId, int page = 1)
         {
             var pageSize = 12;
 
-            var query = _context.Requests
+            var query = _dbContext.Requests
                 .Where(r => r.Status == RequestStatus.Approved)
                 .Include(r => r.Category)
                 .Include(r => r.SubCategory1)
@@ -44,11 +46,10 @@ namespace ReverseMarket.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            // استخدم النوع الصحيح من ReverseMarket.Models
             var model = new ReverseMarket.Models.RequestsViewModel
             {
                 Requests = requests,
-                Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync(),
+                Categories = await _dbContext.Categories.Where(c => c.IsActive).ToListAsync(),
                 CurrentPage = page,
                 TotalPages = (int)Math.Ceiling((double)totalRequests / pageSize),
                 Search = search,
@@ -60,7 +61,7 @@ namespace ReverseMarket.Controllers
 
         public async Task<IActionResult> Details(int id)
         {
-            var request = await _context.Requests
+            var request = await _dbContext.Requests
                 .Include(r => r.Category)
                 .Include(r => r.SubCategory1)
                 .Include(r => r.SubCategory2)
@@ -79,7 +80,15 @@ namespace ReverseMarket.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            ViewBag.Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync();
+            // التحقق من تسجيل الدخول
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (!userId.HasValue)
+            {
+                TempData["ErrorMessage"] = "يجب تسجيل الدخول أولاً";
+                return RedirectToAction("Login", "Account");
+            }
+
+            ViewBag.Categories = await _dbContext.Categories.Where(c => c.IsActive).ToListAsync();
             return View();
         }
 
@@ -89,76 +98,155 @@ namespace ReverseMarket.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Check if user is logged in
                 var userId = HttpContext.Session.GetInt32("UserId");
                 if (!userId.HasValue)
                 {
+                    TempData["ErrorMessage"] = "جلسة المستخدم منتهية الصلاحية";
                     return RedirectToAction("Login", "Account");
                 }
 
-                var request = new Request
+                try
                 {
-                    Title = model.Title,
-                    Description = model.Description,
-                    CategoryId = model.CategoryId,
-                    SubCategory1Id = model.SubCategory1Id,
-                    SubCategory2Id = model.SubCategory2Id,
-                    City = model.City,
-                    District = model.District,
-                    Location = model.Location,
-                    UserId = userId.Value,
-                    Status = RequestStatus.Pending
-                };
+                    var request = new Request
+                    {
+                        Title = model.Title,
+                        Description = model.Description,
+                        CategoryId = model.CategoryId,
+                        SubCategory1Id = model.SubCategory1Id,
+                        SubCategory2Id = model.SubCategory2Id,
+                        City = model.City,
+                        District = model.District,
+                        Location = model.Location,
+                        UserId = userId.Value,
+                        Status = RequestStatus.Pending,
+                        CreatedAt = DateTime.Now
+                    };
 
-                _context.Requests.Add(request);
-                await _context.SaveChangesAsync();
+                    _dbContext.Requests.Add(request);
+                    await _dbContext.SaveChangesAsync();
 
-                // Handle image uploads here
-                // Save images and create RequestImage records
+                    // معالجة رفع الصور
+                    if (model.Images != null && model.Images.Any())
+                    {
+                        await SaveRequestImagesAsync(request.Id, model.Images);
+                    }
 
-                // Notify relevant stores via WhatsApp
-                await NotifyStoresAsync(request);
+                    // إشعار المتاجر المتخصصة
+                    await NotifyStoresAsync(request);
 
-                TempData["SuccessMessage"] = "سوف يتم عرض طلبك بأسرع وقت بعد التحقق منه";
-                return RedirectToAction("Index");
+                    TempData["SuccessMessage"] = "تم إرسال طلبك بنجاح! سيتم مراجعته والموافقة عليه في أقرب وقت.";
+                    return RedirectToAction("Index");
+                }
+                catch (Exception ex)
+                {
+                    // تسجيل الخطأ
+                    Console.WriteLine($"خطأ في إنشاء الطلب: {ex.Message}");
+                    TempData["ErrorMessage"] = "حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.";
+                }
             }
 
-            ViewBag.Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync();
+            ViewBag.Categories = await _dbContext.Categories.Where(c => c.IsActive).ToListAsync();
             return View(model);
+        }
+
+        private async Task SaveRequestImagesAsync(int requestId, List<IFormFile> images)
+        {
+            try
+            {
+                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "requests");
+
+                // إنشاء المجلد إذا لم يكن موجوداً
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var maxFileSize = 5 * 1024 * 1024; // 5 MB
+
+                foreach (var image in images.Take(3)) // أقصى 3 صور
+                {
+                    if (image?.Length > 0)
+                    {
+                        // التحقق من نوع الملف
+                        var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
+                        if (!allowedExtensions.Contains(extension))
+                        {
+                            continue; // تجاهل الملفات غير المدعومة
+                        }
+
+                        // التحقق من حجم الملف
+                        if (image.Length > maxFileSize)
+                        {
+                            continue; // تجاهل الملفات الكبيرة
+                        }
+
+                        // إنشاء اسم ملف فريد
+                        var fileName = $"{Guid.NewGuid()}{extension}";
+                        var filePath = Path.Combine(uploadsFolder, fileName);
+
+                        // حفظ الصورة
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await image.CopyToAsync(fileStream);
+                        }
+
+                        // حفظ معلومات الصورة في قاعدة البيانات
+                        var requestImage = new RequestImage
+                        {
+                            RequestId = requestId,
+                            ImagePath = $"/uploads/requests/{fileName}",
+                            CreatedAt = DateTime.Now
+                        };
+
+                        _dbContext.RequestImages.Add(requestImage);
+                    }
+                }
+
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"خطأ في حفظ الصور: {ex.Message}");
+            }
         }
 
         private async Task NotifyStoresAsync(Request request)
         {
-            // Get stores that work in the same category
-            var relevantStores = await _context.StoreCategories
-                .Include(sc => sc.User)
-                .Where(sc => sc.CategoryId == request.CategoryId ||
-                           sc.SubCategory1Id == request.SubCategory1Id ||
-                           sc.SubCategory2Id == request.SubCategory2Id)
-                .Select(sc => sc.User)
-                .Where(u => u.UserType == UserType.Seller)
-                .Distinct()
-                .ToListAsync();
-
-            // Send WhatsApp notifications to relevant stores
-            foreach (var store in relevantStores)
+            try
             {
-                if (!string.IsNullOrEmpty(store.PhoneNumber))
-                {
-                    var message = $"طلب جديد في متجركم: {request.Title}\n";
-                    message += $"الرابط: {Url.Action("Details", "Requests", new { id = request.Id }, Request.Scheme)}";
+                var relevantStores = await _dbContext.StoreCategories
+                    .Include(sc => sc.User)
+                    .Where(sc => sc.CategoryId == request.CategoryId ||
+                               sc.SubCategory1Id == request.SubCategory1Id ||
+                               sc.SubCategory2Id == request.SubCategory2Id)
+                    .Select(sc => sc.User)
+                    .Where(u => u.UserType == UserType.Seller)
+                    .Distinct()
+                    .ToListAsync();
 
-                    // Here you would integrate with WhatsApp API
-                    // For now, we'll just log it
-                    Console.WriteLine($"WhatsApp to {store.PhoneNumber}: {message}");
+                foreach (var store in relevantStores)
+                {
+                    if (!string.IsNullOrEmpty(store.PhoneNumber))
+                    {
+                        var message = $"طلب جديد في متجركم: {request.Title}\n";
+                        message += $"الموقع: {request.City} - {request.District}\n";
+                        message += $"الرابط: {Url.Action("Details", "Requests", new { id = request.Id }, Request.Scheme)}";
+
+                        Console.WriteLine($"WhatsApp to {store.PhoneNumber}: {message}");
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"خطأ في إرسال الإشعارات: {ex.Message}");
             }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetSubCategories1(int categoryId)
         {
-            var subCategories = await _context.SubCategories1
+            var subCategories = await _dbContext.SubCategories1
                 .Where(sc => sc.CategoryId == categoryId && sc.IsActive)
                 .Select(sc => new { id = sc.Id, name = sc.Name })
                 .ToListAsync();
@@ -169,7 +257,7 @@ namespace ReverseMarket.Controllers
         [HttpGet]
         public async Task<IActionResult> GetSubCategories2(int subCategory1Id)
         {
-            var subCategories = await _context.SubCategories2
+            var subCategories = await _dbContext.SubCategories2
                 .Where(sc => sc.SubCategory1Id == subCategory1Id && sc.IsActive)
                 .Select(sc => new { id = sc.Id, name = sc.Name })
                 .ToListAsync();

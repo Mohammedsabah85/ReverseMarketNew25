@@ -9,18 +9,18 @@ namespace ReverseMarket.Areas.Admin.Controllers
     [Area("Admin")]
     public class RequestsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _dbContext;
 
         public RequestsController(ApplicationDbContext context)
         {
-            _context = context;
+            _dbContext = context;
         }
 
         public async Task<IActionResult> Index(RequestStatus? status = null, int page = 1)
         {
             var pageSize = 20;
 
-            var query = _context.Requests
+            var query = _dbContext.Requests
                 .Include(r => r.User)
                 .Include(r => r.Category)
                 .Include(r => r.SubCategory1)
@@ -52,7 +52,7 @@ namespace ReverseMarket.Areas.Admin.Controllers
 
         public async Task<IActionResult> Details(int id)
         {
-            var request = await _context.Requests
+            var request = await _dbContext.Requests
                 .Include(r => r.User)
                 .Include(r => r.Category)
                 .Include(r => r.SubCategory1)
@@ -74,7 +74,7 @@ namespace ReverseMarket.Areas.Admin.Controllers
         {
             try
             {
-                var request = await _context.Requests.FindAsync(id);
+                var request = await _dbContext.Requests.FindAsync(id);
                 if (request == null)
                 {
                     TempData["ErrorMessage"] = "الطلب غير موجود";
@@ -103,7 +103,7 @@ namespace ReverseMarket.Areas.Admin.Controllers
                     await NotifyStoresAboutNewRequestAsync(request);
                 }
 
-                await _context.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
 
                 // رسالة نجاح
                 var statusText = requestStatus switch
@@ -132,7 +132,7 @@ namespace ReverseMarket.Areas.Admin.Controllers
         {
             try
             {
-                var user = await _context.Users.FindAsync(request.UserId);
+                var user = await _dbContext.Users.FindAsync(request.UserId);
                 if (user != null && !string.IsNullOrEmpty(user.PhoneNumber))
                 {
                     var message = $"مرحباً {user.FirstName}!\n\n" +
@@ -154,7 +154,7 @@ namespace ReverseMarket.Areas.Admin.Controllers
         {
             try
             {
-                var relevantStores = await _context.StoreCategories
+                var relevantStores = await _dbContext.StoreCategories
                     .Include(sc => sc.User)
                     .Where(sc => sc.CategoryId == request.CategoryId ||
                                sc.SubCategory1Id == request.SubCategory1Id ||
