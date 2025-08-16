@@ -69,66 +69,119 @@ namespace ReverseMarket.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateStatus(int id, RequestStatus status, string? adminNotes)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateStatus(int id, int status, string? adminNotes = null)
         {
-            var request = await _context.Requests.FindAsync(id);
-            if (request == null)
+            try
             {
-                return NotFound();
+                var request = await _context.Requests.FindAsync(id);
+                if (request == null)
+                {
+                    TempData["ErrorMessage"] = "الطلب غير موجود";
+                    return RedirectToAction("Index");
+                }
+
+                // التحقق من صحة الحالة
+                if (!Enum.IsDefined(typeof(RequestStatus), status))
+                {
+                    TempData["ErrorMessage"] = "حالة الطلب غير صحيحة";
+                    return RedirectToAction("Details", new { id });
+                }
+
+                var requestStatus = (RequestStatus)status;
+                request.Status = requestStatus;
+                request.AdminNotes = adminNotes;
+
+                if (requestStatus == RequestStatus.Approved)
+                {
+                    request.ApprovedAt = DateTime.Now;
+
+                    // إشعار المستخدم بالموافقة
+                    await NotifyUserAboutApprovalAsync(request);
+
+                    // إشعار المتاجر ذات الصلة
+                    await NotifyStoresAboutNewRequestAsync(request);
+                }
+
+                await _context.SaveChangesAsync();
+
+                // رسالة نجاح
+                var statusText = requestStatus switch
+                {
+                    RequestStatus.Approved => "تم اعتماد",
+                    RequestStatus.Rejected => "تم رفض",
+                    RequestStatus.Postponed => "تم تأجيل",
+                    _ => "تم تحديث"
+                };
+
+                TempData["SuccessMessage"] = $"{statusText} الطلب بنجاح";
+
+                return RedirectToAction("Details", new { id });
             }
-
-            request.Status = status;
-            request.AdminNotes = adminNotes;
-
-            if (status == RequestStatus.Approved)
+            catch (Exception ex)
             {
-                request.ApprovedAt = DateTime.Now;
+                // تسجيل الخطأ
+                Console.WriteLine($"خطأ في تحديث حالة الطلب: {ex.Message}");
+                TempData["ErrorMessage"] = "حدث خطأ أثناء تحديث حالة الطلب";
 
-                // Notify user about approval
-                await NotifyUserAboutApprovalAsync(request);
-
-                // Notify relevant stores
-                await NotifyStoresAboutNewRequestAsync(request);
+                return RedirectToAction("Details", new { id });
             }
-
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction("Details", new { id });
         }
 
         private async Task NotifyUserAboutApprovalAsync(Request request)
         {
-            var user = await _context.Users.FindAsync(request.UserId);
-            if (user != null && !string.IsNullOrEmpty(user.PhoneNumber))
+            try
             {
-                var message = $"تم الموافقة على طلبك: {request.Title}";
-                // Send WhatsApp notification
-                Console.WriteLine($"WhatsApp to {user.PhoneNumber}: {message}");
+                var user = await _context.Users.FindAsync(request.UserId);
+                if (user != null && !string.IsNullOrEmpty(user.PhoneNumber))
+                {
+                    var message = $"مرحباً {user.FirstName}!\n\n" +
+                                 $"تم الموافقة على طلبك: {request.Title}\n\n" +
+                                 $"سيتم إشعار المتاجر المتخصصة وستبدأ بتلقي العروض قريباً.\n\n" +
+                                 $"شكراً لاستخدامك السوق العكسي";
+
+                    // إرسال إشعار واتساب
+                    Console.WriteLine($"WhatsApp إلى {user.PhoneNumber}: {message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"خطأ في إرسال إشعار الموافقة: {ex.Message}");
             }
         }
 
         private async Task NotifyStoresAboutNewRequestAsync(Request request)
         {
-            var relevantStores = await _context.StoreCategories
-                .Include(sc => sc.User)
-                .Where(sc => sc.CategoryId == request.CategoryId ||
-                           sc.SubCategory1Id == request.SubCategory1Id ||
-                           sc.SubCategory2Id == request.SubCategory2Id)
-                .Select(sc => sc.User)
-                .Where(u => u.UserType == UserType.Seller)
-                .Distinct()
-                .ToListAsync();
-
-            foreach (var store in relevantStores)
+            try
             {
-                if (!string.IsNullOrEmpty(store.PhoneNumber))
-                {
-                    var message = $"طلب جديد في متجركم: {request.Title}\n";
-                    message += $"الرابط: [Request URL]";
+                var relevantStores = await _context.StoreCategories
+                    .Include(sc => sc.User)
+                    .Where(sc => sc.CategoryId == request.CategoryId ||
+                               sc.SubCategory1Id == request.SubCategory1Id ||
+                               sc.SubCategory2Id == request.SubCategory2Id)
+                    .Select(sc => sc.User)
+                    .Where(u => u.UserType == UserType.Seller)
+                    .Distinct()
+                    .ToListAsync();
 
-                    // Send WhatsApp notification
-                    Console.WriteLine($"WhatsApp to {store.PhoneNumber}: {message}");
+                foreach (var store in relevantStores)
+                {
+                    if (!string.IsNullOrEmpty(store.PhoneNumber))
+                    {
+                        var message = $"مرحباً {store.StoreName ?? store.FirstName}!\n\n" +
+                                     $"طلب جديد في متجركم: {request.Title}\n" +
+                                     $"الموقع: {request.City} - {request.District}\n\n" +
+                                     $"للمشاهدة والتواصل مع العميل، تفضل بزيارة موقعنا\n\n" +
+                                     $"السوق العكسي";
+
+                        // إرسال إشعار واتساب
+                        Console.WriteLine($"WhatsApp إلى {store.PhoneNumber}: {message}");
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"خطأ في إرسال إشعارات المتاجر: {ex.Message}");
             }
         }
     }
