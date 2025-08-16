@@ -5,13 +5,17 @@ namespace ReverseMarket.Models
     public class LoginViewModel
     {
         [Required(ErrorMessage = "رقم الهاتف مطلوب")]
-        [Phone(ErrorMessage = "رقم الهاتف غير صحيح")]
+        [RegularExpression(@"^[0-9]{10}$", ErrorMessage = "رقم الهاتف يجب أن يكون 10 أرقام")]
         public string PhoneNumber { get; set; } = "";
 
+        [Required(ErrorMessage = "رمز البلد مطلوب")]
         public string CountryCode { get; set; } = "+964";
 
         [Required(ErrorMessage = "يجب الموافقة على الشروط والأحكام")]
         public bool AcceptTerms { get; set; }
+
+        // خاصية للحصول على الرقم الكامل
+        public string FullPhoneNumber => CountryCode + PhoneNumber;
     }
 
     public class VerifyOTPViewModel
@@ -33,11 +37,13 @@ namespace ReverseMarket.Models
     public class CreateAccountViewModel
     {
         [Required(ErrorMessage = "الاسم الأول مطلوب")]
-        [StringLength(100, ErrorMessage = "الاسم الأول لا يجب أن يزيد عن 100 حرف")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "الاسم الأول يجب أن يكون بين 2 و 100 حرف")]
+        [RegularExpression(@"^[\u0600-\u06FFa-zA-Z\s]+$", ErrorMessage = "الاسم الأول يجب أن يحتوي على أحرف عربية أو إنجليزية فقط")]
         public string FirstName { get; set; } = "";
 
         [Required(ErrorMessage = "اسم العائلة مطلوب")]
-        [StringLength(100, ErrorMessage = "اسم العائلة لا يجب أن يزيد عن 100 حرف")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "اسم العائلة يجب أن يكون بين 2 و 100 حرف")]
+        [RegularExpression(@"^[\u0600-\u06FFa-zA-Z\s]+$", ErrorMessage = "اسم العائلة يجب أن يحتوي على أحرف عربية أو إنجليزية فقط")]
         public string LastName { get; set; } = "";
 
         [Required(ErrorMessage = "تاريخ الميلاد مطلوب")]
@@ -65,6 +71,7 @@ namespace ReverseMarket.Models
         public IFormFile? ProfileImage { get; set; }
 
         [Required(ErrorMessage = "نوع الحساب مطلوب")]
+        [Range(1, 2, ErrorMessage = "نوع الحساب غير صحيح")]
         public UserType UserType { get; set; }
 
         // Store fields (for sellers)
@@ -84,5 +91,35 @@ namespace ReverseMarket.Models
         public string? WebsiteUrl3 { get; set; }
 
         public List<int>? StoreCategories { get; set; }
+
+        // خاصية للتحقق من صحة العمر
+        public bool IsValidAge()
+        {
+            var age = DateTime.Today.Year - DateOfBirth.Year;
+            if (DateOfBirth.Date > DateTime.Today.AddYears(-age)) age--;
+            return age >= 18 && age <= 100;
+        }
+
+        // خاصية للتحقق من صحة بيانات المتجر
+        public bool IsValidStoreData()
+        {
+            if (UserType == UserType.Seller)
+            {
+                return !string.IsNullOrWhiteSpace(StoreName) &&
+                       StoreCategories != null &&
+                       StoreCategories.Any();
+            }
+            return true;
+        }
+    }
+
+    // إضافة ViewModel لصفحة النجاح
+    public class AccountCreatedViewModel
+    {
+        public string UserName { get; set; } = "";
+        public string PhoneNumber { get; set; } = "";
+        public UserType UserType { get; set; }
+        public string? StoreName { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }
